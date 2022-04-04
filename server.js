@@ -26,7 +26,7 @@ mongoose
   .catch((err) => console.log("ERR", err));
 
 app.get("/hello", (req, res) => {
-  res.send("HELLO WORLD");
+  res.send("check");
 });
 
 app.post("/api/register", async (req, res) => {
@@ -49,7 +49,7 @@ app.post("/api/register", async (req, res) => {
           console.log("user", user);
           res.status(201).json({
             status: "1",
-            user: user,
+            user: { name: user?.name, email: user?.email },
           });
         } catch (err) {
           res.json({ status: "0", err: err.message });
@@ -87,7 +87,7 @@ app.post("/api/login", async (req, res) => {
   } else {
     return res.status(400).json({
       status: "0",
-      user: "Invalid Email or password!",
+      message: "Invalid Email or password!",
     });
   }
 });
