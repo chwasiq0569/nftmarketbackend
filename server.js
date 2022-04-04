@@ -3,6 +3,8 @@ const app = express();
 const cors = require("cors");
 const mongoose = require("mongoose");
 const User = require("./models/user.models");
+const jwt = require("jsonwebtoken");
+
 require("dotenv").config();
 
 app.use(cors());
@@ -60,4 +62,32 @@ app.post("/api/register", async (req, res) => {
         message: "Something went wrong!!",
       });
     });
+});
+
+app.post("/api/login", async (req, res) => {
+  const user = await User.findOne({
+    email: req.body.email,
+    password: req.body.password,
+  });
+
+  if (user) {
+    const token = jwt.sign(
+      {
+        name: user.name,
+        email: user.email,
+      },
+      process.env.JWT_SECRET_KEY
+    );
+
+    return res.status(200).json({
+      status: "1",
+      token: token,
+      //   user: user,
+    });
+  } else {
+    return res.status(400).json({
+      status: "0",
+      user: "Invalid Email or password!",
+    });
+  }
 });
