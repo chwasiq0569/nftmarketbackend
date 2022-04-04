@@ -1,0 +1,63 @@
+const express = require("express");
+const app = express();
+const cors = require("cors");
+const mongoose = require("mongoose");
+const User = require("./models/user.models");
+require("dotenv").config();
+
+app.use(cors());
+app.use(express.json());
+
+const PORT = process.env.PORT || 1337;
+
+mongoose
+  .connect(
+    `mongodb+srv://chwasiq0569:${process.env.DATABASE_PASSWORD}@cluster0.rzt9w.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`
+  )
+  .then(() => {
+    console.log("Connected to Database!");
+
+    app.listen(PORT, () => {
+      console.log("SERVER STARTED");
+    });
+  })
+  .catch((err) => console.log("ERR", err));
+
+app.get("/hello", (req, res) => {
+  res.send("HELLO WORLD");
+});
+
+app.post("/api/register", async (req, res) => {
+  User.findOne({
+    email: req.body.email,
+  })
+    .then(async (user) => {
+      if (user) {
+        res.status(400).json({
+          status: "0",
+          message: "User Already Exists",
+        });
+      } else {
+        try {
+          const user = await User.create({
+            name: req.body.name,
+            email: req.body.email,
+            password: req.body.password,
+          });
+          console.log("user", user);
+          res.status(201).json({
+            status: "1",
+            user: user,
+          });
+        } catch (err) {
+          res.json({ status: "0", err: err.message });
+        }
+      }
+    })
+    .catch((err) => {
+      return res.status(400).json({
+        status: "0",
+        message: "Something went wrong!!",
+      });
+    });
+});
