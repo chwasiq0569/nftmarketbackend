@@ -4,6 +4,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const User = require("./models/user.models");
 const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
 
 require("dotenv").config();
 
@@ -41,10 +42,12 @@ app.post("/api/register", async (req, res) => {
         });
       } else {
         try {
+          const encryptedPassword = await bcrypt.hash(req.body.password, 10);
+          console.log("ENCRYPTED_PASSWORD: ", encryptedPassword);
           const user = await User.create({
             name: req.body.name,
             email: req.body.email,
-            password: req.body.password,
+            password: encryptedPassword,
           });
           console.log("user", user);
           res.status(201).json({
@@ -67,10 +70,16 @@ app.post("/api/register", async (req, res) => {
 app.post("/api/login", async (req, res) => {
   const user = await User.findOne({
     email: req.body.email,
-    password: req.body.password,
   });
 
-  if (user) {
+  const isCorrectPassword = await bcrypt.compare(
+    req.body.password,
+    user.password
+  );
+
+  console.log("isCorrectPassword: ", isCorrectPassword);
+
+  if (user && isCorrectPassword) {
     const token = jwt.sign(
       {
         name: user.name,
